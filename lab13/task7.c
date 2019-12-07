@@ -1,46 +1,76 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N 1000001
-typedef struct Node_s {
-    int length;
-    char **data;
+#define TABLE_SIZE 1000001
+#define STRING_MAX_LEN 8
+
+typedef struct node
+{
+    char *val;
+    struct node *prev;
+    struct node *next;
 } Node;
 
-Node data[N];
+void initList(Node **list)
+{
+    *list = malloc(sizeof(Node));
 
-int main(void) {
+    (*list)->val = NULL;
+    (*list)->prev = (*list);
+    (*list)->next = (*list);
+}
 
+Node *addAfter(Node *node, void *ptr)
+{
+    Node *new_node = malloc(sizeof(Node));
+    new_node->val = ptr;
+
+    new_node->prev = node;
+    new_node->next = node->next;
+    new_node->prev->next = new_node;
+    new_node->next->prev = new_node;
+
+    return new_node;
+}
+
+Node *list_arr[TABLE_SIZE] = {NULL};
+
+int main()
+{
     freopen("input.txt", "r", stdin);
     freopen("output.txt", "w", stdout);
 
     int n;
-
     scanf("%d", &n);
 
-    for (int i = 0; i < n; i++) {
-        int key;
-        char *buffer = malloc(8 * sizeof(char));
-        scanf("%d %s", &key, buffer);
+    for (int i = 0; i < n; ++i)
+    {
+        int k;
+        char *str = malloc(STRING_MAX_LEN * sizeof(char));
+        scanf("%d %s\n", &k, str);
 
-        if (data[key].length == 0) {
-            data[key].data = malloc(sizeof(char *));
-            data[key].data[0] = buffer;
-            data[key].length = 1;
+        if (!list_arr[k])
+        {
+            initList(&list_arr[k]);
+        }
+
+        Node *el = list_arr[k]->prev;
+        Node *new_node = addAfter(el, str);
+        list_arr[k] = new_node->next;
+    }
+
+    for (int i = 0; i < TABLE_SIZE; ++i)
+    {
+        if (!list_arr[i])
+        {
             continue;
         }
 
-        data[key].data = realloc(data[key].data, (data[key].length + 1) * sizeof(char *));
-        data[key].data[data[key].length] = buffer;
-        data[key].length++;
-
-    }
-
-    for (int i = 0; i < N; i++) {
-        if (data[i].length != 0) {
-            for (int j = 0; j < data[i].length; j++) {
-                printf("%d %s\n", i, data[i].data[j]);
-            }
+        for (Node *start = list_arr[i]->next; start->val != NULL; start = start->next)
+        {
+            printf("%d %s\n", i, (char *)start->val);
         }
     }
+
+    return 0;
 }
